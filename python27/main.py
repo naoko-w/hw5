@@ -11,8 +11,10 @@ templateEnv = jinja2.Environment(loader=templateLoader) # テンプレートを�
 pataTmpl = templateEnv.get_template("pata.html") # パタトクカシーー用のテンプレートを"pata.htmlから読み込む。
 networkTmpl = templateEnv.get_template("norikae.html")  # 乗換案内用のテンプレートを"norikae.html"から読み込む。
 
-networkJson = urlfetch.fetch("https://tokyo.fantasy-transit.appspot.com/net?format=json").content  # ウェブサイトから電車の線路情報をJSON形式でダウンロードする
+networkJson = urlfetch.fetch("http://tokyo.fantasy-transit.appspot.com/net?format=json").content  # ウェブサイトから電車の線路情報をJSON形式でダウンロードする
 network = json.loads(networkJson.decode('utf-8'))  # JSONとしてパースする（stringからdictのlistに変換する）
+scheduleJson = urlfetch.fetch("http://fantasy-transit.appspot.com/schedules?format=json").content #ウェブサイトから時刻表をJSON形式でダウンロードする
+schedule = json.loads(scheduleJson.decode('utf-8')) #JSONとしてパースする
 
 # このRequestHandlerでパタトカシーーのリクエストを処理して、結果を返す。
 class Root(webapp2.RequestHandler):
@@ -30,16 +32,41 @@ class Root(webapp2.RequestHandler):
 class Pata(webapp2.RequestHandler):
     def get(self):
         # とりあえずAとBをつなぐだけで返事を作っていますけど、パタタコカシーーになるように自分で直してください！
-        pata = self.request.get("a") + self.request.get("b")
+        a = self.request.get("a")
+        b = self.request.get("b")
+        pata = ""
+        i = 0
+        if len(a) < len(b):
+          while i < len(a):
+            pata += a[i] + b[i]
+            i = i + 1
+          while i < len(b):
+            pata += b[i]
+            i = i + 1
+        else:
+          while i < len(b):
+            pata += a[i] + b[i]
+            i = i + 1
+          while i < len(a):
+            pata += a[i]
+            i = i + 1
         self.response.headers['Content-Type'] = 'text/html; charset=UTF-8'
         # テンプレートの内容を埋め込んで、返事を返す。
         self.response.write(pataTmpl.render(pata=pata, request=self.request))
 
 class Norikae(webapp2.RequestHandler):
     def get(self):
-        self.response.headers['Content-Type'] = 'text/html; charset=UTF-8'
-        self.response.write(networkTmpl.render(network=network))
+        depart = self.request.get("depart")
+        arrive = self.request.get("arrive")
+        hour = self.request.get("hour")
+        minute = self.request.get("minute")
 
+        #各駅についてそれぞれ隣接リストを作って、幅優先探索を行う
+
+        
+        self.response.headers['Content-Type'] = 'text/html; charset=UTF-8'
+        self.response.write(networkTmpl.render(network=network, request=self.request))
+        
 app = webapp2.WSGIApplication([
     ('/', Root),
     ('/pata', Pata),

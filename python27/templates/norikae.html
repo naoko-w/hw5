@@ -1,6 +1,46 @@
 <html>
-  <head><title>JSONを読み込む例</title></head>
+  <head><title>乗り換え案内</title></head>
   <body>
+  <h1><B>ルート検索</B></h1>
+
+  <form>
+    <ul>
+      <li>出　　発　： 
+		    <select name="depart">
+          <option value="">{{request.get("depart")}}</option>
+          {% for line in network %}
+          {% for station in line["Stations"] %}
+          <option value="{{station}}">{{station}}</option>
+          {% endfor %}
+          {% endfor %}
+        </select>
+      </li><br>
+      <li>到　　着　： 
+          <select name="arrive">
+            <option value="">{{request.get("arrive")}}</option>
+            {% for line in network %}
+            {% for station in line["Stations"] %}
+            <option value="{{station}}">{{station}}</option>
+            {% endfor %}
+            {% endfor %}
+          </select>
+      </li><br>
+      <li>
+        出発時刻　：
+        <input type=text name=hour size=3> 時
+        <input type=text name=minute size=3> 分
+      </li><br><br>
+      <input type=submit value=　　検索　　>
+    </ul> 
+  </form><br><br>
+  <h3><B>検索結果</B></h3>
+  <ul>
+    <li>出　　発　： {{request.get("depart")}}</li><br>
+    <li>到　　着　： {{request.get("arrive")}}</li><br>
+    <li>出発時刻　： {{request.get("hour")}}時{{request.get("minute")}}分</li><br>
+  </ul>
+    <!--
+		
     路線：
     <ul>
       {% for line in network %}
@@ -13,6 +53,8 @@
       </li>
       {% endfor %}
     </ul>
+  -->
+  
   </body>
 </html>
   
